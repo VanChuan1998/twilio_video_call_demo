@@ -2,7 +2,7 @@ name: twilio_video_call_demo
 description: Flutter video calling app using Agora SDK with Bloc/Cubit
 publish_to: "none"
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
