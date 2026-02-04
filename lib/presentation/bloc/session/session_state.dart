@@ -13,9 +13,10 @@ class SessionState extends Equatable {
   SessionState copyWith({
     String? userId,
     bool? isSessionStarted,
+    bool resetUserId = false,
   }) {
     return SessionState(
-      userId: userId ?? this.userId,
+      userId: resetUserId ? null : (userId ?? this.userId),
       isSessionStarted: isSessionStarted ?? this.isSessionStarted,
     );
   }

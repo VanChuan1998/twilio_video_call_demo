@@ -13,6 +13,7 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
     emit(state.copyWith(
       userId: event.userId,
       isSessionStarted: true,
+      resetUserId: false,
     ));
   }
 }
