@@ -6,6 +6,7 @@ import '../../data/repositories/video_call_repository_impl.dart';
 import '../../domain/repositories/agora_token_repository.dart';
 import '../../domain/repositories/video_call_repository.dart';
 import '../../presentation/cubit/video_call/video_call_cubit.dart';
+import '../../presentation/cubit/drawer_menu/drawer_menu_cubit.dart';
 import '../../presentation/bloc/session/session_bloc.dart';
 
 /// Dependency Injection container
@@ -29,6 +30,11 @@ class InjectionContainer {
           context.read<VideoCallRepository>(),
           context.read<AgoraTokenRepository>(),
         ),
+      ),
+
+      // Drawer menu Cubit
+      BlocProvider<DrawerMenuCubit>(
+        create: (_) => DrawerMenuCubit(),
       ),
 
       // Session Bloc

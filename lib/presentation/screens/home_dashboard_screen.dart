@@ -7,7 +7,12 @@ import 'package:twilio_video_call_demo/presentation/bloc/session/session_state.d
 import '../../core/config/app_config.dart';
 import '../../core/utils/agora_uid_utils.dart';
 import '../bloc/session/session_bloc.dart';
+import '../bloc/session/session_event.dart';
 import '../cubit/video_call/video_call_cubit.dart';
+import '../cubit/drawer_menu/drawer_menu_cubit.dart';
+import '../cubit/drawer_menu/drawer_menu_state.dart';
+import '../../domain/entities/menu_item_entity.dart';
+import '../widgets/app_drawer.dart';
 import '../widgets/appointment_card.dart';
 
 /// Màn hình dashboard chính (demo telehealth).
@@ -22,6 +27,10 @@ class HomeDashboardScreen extends StatefulWidget {
 
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   bool _isJoining = false;
+
+  void _onMenuPressed() {
+    context.read<DrawerMenuCubit>().toggleDrawer();
+  }
 
   Future<void> _onJoin() async {
     if (_isJoining) return;
@@ -60,36 +69,115 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _DashboardHeader(),
-                  const SizedBox(height: 16),
-                  const _DashboardSearchBar(),
-                  const SizedBox(height: 24),
-                  _UpcomingSection(onJoinPressed: _onJoin),
-                  const SizedBox(height: 24),
-                  const _PastSection(),
-                ],
-              ),
-            ),
-            if (_isJoining)
-              Positioned.fill(
-                child: Container(
-                  color: Colors.black26,
-                  child: const Center(
-                    child: CircularProgressIndicator(),
+        child: BlocBuilder<DrawerMenuCubit, DrawerMenuState>(
+          builder: (context, drawerState) {
+            final isOpen = drawerState.isOpen;
+
+            return Stack(
+              children: [
+                AnimatedScale(
+                  scale: isOpen ? 0.96 : 1.0,
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  child: AnimatedSlide(
+                    offset: isOpen ? const Offset(0.2, 0) : Offset.zero,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _DashboardHeader(onMenuPressed: _onMenuPressed),
+                          const SizedBox(height: 16),
+                          const _DashboardSearchBar(),
+                          const SizedBox(height: 24),
+                          _UpcomingSection(onJoinPressed: _onJoin),
+                          const SizedBox(height: 24),
+                          const _PastSection(),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-          ],
+                if (isOpen)
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: () =>
+                          context.read<DrawerMenuCubit>().closeDrawer(),
+                      child: Container(
+                        color: Colors.black26,
+                      ),
+                    ),
+                  ),
+                AnimatedSlide(
+                  offset: isOpen ? Offset.zero : const Offset(-1, 0),
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  child: AppDrawer(
+                    user: DrawerUserViewData(
+                      displayName: context
+                              .read<SessionBloc>()
+                              .state
+                              .userId
+                              ?.trim() ??
+                          'User',
+                    ),
+                    items: drawerState.items,
+                    selectedItemId: drawerState.selectedItemId,
+                    onClose: () =>
+                        context.read<DrawerMenuCubit>().closeDrawer(),
+                    onItemSelected: (item) {
+                      context.read<DrawerMenuCubit>().selectItem(item.id);
+                      switch (item.destination) {
+                        case DrawerDestination.home:
+                          context.go('/dashboard');
+                          break;
+                        case DrawerDestination.profile:
+                          // Chưa có màn profile, tạm thời chưa điều hướng.
+                          break;
+                        case DrawerDestination.appointments:
+                          // Chưa có màn appointments riêng.
+                          break;
+                        case DrawerDestination.calendar:
+                          // Chưa có màn calendar riêng.
+                          break;
+                        case DrawerDestination.contact:
+                          // Chưa có màn contact riêng.
+                          break;
+                        case DrawerDestination.terms:
+                          // Chưa có màn terms riêng.
+                          break;
+                        case DrawerDestination.privacy:
+                          // Chưa có màn privacy riêng.
+                          break;
+                      }
+                    },
+                    onLogout: () {
+                      context.read<SessionBloc>().add(
+                            const StartSession(''),
+                          );
+                      context.go('/sign-in');
+                    },
+                  ),
+                ),
+                if (_isJoining)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black26,
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -97,7 +185,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 }
 
 class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader();
+  final VoidCallback onMenuPressed;
+
+  const _DashboardHeader({required this.onMenuPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +209,7 @@ class _DashboardHeader extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                onPressed: () {},
+                onPressed: onMenuPressed,
                 icon: const Icon(Icons.menu),
                 color: colorScheme.onPrimaryContainer,
               ),

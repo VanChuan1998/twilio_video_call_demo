@@ -67,6 +67,16 @@ class VideoCallRepositoryImpl implements VideoCallRepository {
       if (_engine == null) {
         throw Exception('Engine chưa được khởi tạo');
       }
+      await _engine!.setVideoEncoderConfiguration(
+        VideoEncoderConfiguration(
+          dimensions: VideoDimensions(
+            width: 640,
+            height: 360,
+          ),
+          frameRate: 15,
+          bitrate: 800,
+        ),
+      );
 
       _updateState(CallState.connecting);
       _addLog('Đang tham gia channel: $channelName');
@@ -204,8 +214,13 @@ class VideoCallRepositoryImpl implements VideoCallRepository {
           _updateUsers();
           _addLog('Người dùng đã rời. UID: $remoteUid');
         },
-        onRemoteVideoStateChanged: (RtcConnection connection, int remoteUid,
-            RemoteVideoState state, RemoteVideoStateReason reason, int elapsed) {
+        onRemoteVideoStateChanged: (
+          RtcConnection connection,
+          int remoteUid,
+          RemoteVideoState state,
+          RemoteVideoStateReason reason,
+          int elapsed,
+        ) {
           final user = _users[remoteUid];
           if (user == null) return;
           final videoOn = state == RemoteVideoState.remoteVideoStateDecoding;
