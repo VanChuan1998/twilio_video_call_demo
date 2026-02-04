@@ -14,15 +14,6 @@ class HomeDashboardScreen extends StatefulWidget {
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   Future<String?> _displayNameFuture = UserPreferences.getDisplayName();
 
-  void _openProfileConfig() async {
-    await context.push('/onboarding', extra: {'edit': true});
-    if (mounted) {
-      setState(() {
-        _displayNameFuture = UserPreferences.getDisplayName();
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,10 +24,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _DashboardHeader(
-                displayNameFuture: _displayNameFuture,
-                onOpenProfileConfig: _openProfileConfig,
-              ),
+              _DashboardHeader(displayNameFuture: _displayNameFuture),
               const SizedBox(height: 16),
               const _DashboardSearchBar(),
               const SizedBox(height: 24),
@@ -52,13 +40,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 }
 
 class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader({
-    required this.displayNameFuture,
-    required this.onOpenProfileConfig,
-  });
+  const _DashboardHeader({required this.displayNameFuture});
 
   final Future<String?> displayNameFuture;
-  final VoidCallback onOpenProfileConfig;
 
   @override
   Widget build(BuildContext context) {
@@ -87,38 +71,27 @@ class _DashboardHeader extends StatelessWidget {
               const Spacer(),
               const _OnlineStatusToggle(),
               const SizedBox(width: 12),
-              IconButton(
-                onPressed: onOpenProfileConfig,
-                icon: const Icon(Icons.settings),
-                color: colorScheme.onPrimaryContainer,
-                tooltip: 'Cấu hình tên hiển thị',
-              ),
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: onOpenProfileConfig,
-                child: FutureBuilder<String?>(
-                  future: displayNameFuture,
-                  builder: (context, snapshot) {
-                    final name = snapshot.data?.trim() ?? 'User';
-                    final initial = name.isNotEmpty
-                        ? name[0].toUpperCase()
-                        : 'U';
-                    return CircleAvatar(
-                      radius: 20,
-                      backgroundColor: colorScheme.onPrimaryContainer,
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: colorScheme.primary,
-                        child: Text(
-                          initial,
-                          style: textTheme.titleMedium?.copyWith(
-                            color: colorScheme.onPrimary,
-                          ),
+              FutureBuilder<String?>(
+                future: displayNameFuture,
+                builder: (context, snapshot) {
+                  final name = snapshot.data?.trim() ?? 'User';
+                  final initial =
+                      name.isNotEmpty ? name[0].toUpperCase() : 'U';
+                  return CircleAvatar(
+                    radius: 20,
+                    backgroundColor: colorScheme.onPrimaryContainer,
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: colorScheme.primary,
+                      child: Text(
+                        initial,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onPrimary,
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ],
           ),

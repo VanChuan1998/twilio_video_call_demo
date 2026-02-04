@@ -1,22 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../local/user_preferences.dart';
 import '../../presentation/screens/home_screen.dart';
 import '../../presentation/screens/call_screen.dart';
 import '../../presentation/screens/home_dashboard_screen.dart';
-import '../../presentation/screens/onboarding_profile_screen.dart';
 import '../../presentation/screens/sign_in_screen.dart';
 
-/// Cấu hình routing cho ứng dụng
+/// Cấu hình routing cho ứng dụng.
+/// Tên user lấy từ data màn sign-in (lưu qua UserPreferences).
 final appRouter = GoRouter(
-  redirect: (BuildContext context, GoRouterState state) async {
-    final hasConfig = await UserPreferences.hasConfigured();
-    final location = state.matchedLocation;
-    if (!hasConfig && location != '/onboarding') {
-      return '/onboarding';
-    }
-    return null;
-  },
   initialLocation: '/sign-in',
   routes: [
     GoRoute(
@@ -26,14 +16,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: '/onboarding',
-      builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-        final isEdit = extra?['edit'] == true;
-        return OnboardingProfileScreen(isEditMode: isEdit);
-      },
     ),
     GoRoute(
       path: '/dashboard',
